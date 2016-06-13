@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "required": [
+    "policyId",
+    "dataSources",
+    "policy",
+    "destinations"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "allowedPattern": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9]+$"
+    },
+    "diskSizePattern": {
+      "type": "string",
+      "pattern": "^(\\d+)(\\s*)((GB)|(MB))$"
+    },
+    "batchSizePattern": {
+      "type": "string",
+      "pattern": "^(\\d+)(\\s*)((KB)|(MB))$"
+    },
+    "topicType": {
+      "type": "string",
+      "enum": [
+        "topic"
+      ]
+    },
+    "topicProperties": {
+      "type": "object",
+      "properties": {
+        "topicName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topicName"
+      ]
+    }
+  },
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "description": "Display Name"
+    },
+    "policyId": {
+      "$ref": "#/definitions/allowedPattern",
+      "description": "Unique id identifying the policy"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "sf#policy"
+      ],
+      "description": ""
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description about the policy."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time at which policy was created.This property will be returned by server in addition to original deviceType request.An RFC3339 timestamp in UTC time.This is formatted as YYYY-MM-DDThh:mm:ss.fffZ. The milliseconds portion .fff is optional. Defined in the JSON Schema spec"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Specify time at which policy was updated. This property optionally can be returned by server"
+    },
+    "dataSources": {
+      "description": "Each store and forward policy must contain at least one data  source to be consumed and to be tranferred to the destinatiions. Topics are supported as input data source.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "description": "MessageBus topic as a dataSource.",
+                "$ref": "#/definitions/topicType"
+              },
+              "topicProperties": {
+                "description": "MessageBus topic name. Supports pattern based subscriptions. For example to subscribe to all the data from device A 'system.device.A.*' can be specified.",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/topicProperties"
+                  },
+                  {
+                    "properties": {
+                      "filterExpression": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "topicProperties"
+            ]
+          }
+        ]
+      }
+    },
+    "policy": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "inputBuffer": {
+          "type": "object",
+          "properties": {
+            "noOfMessages": {
+              "type": "integer"
+            },
+            "dropStrategy": {
+              "type": "string",
+              "enum": [
+                "fifo",
+                "lifo",
+                "no-drop"
+              ]
+            }
+          },
+          "required": [
+            "noOfMessages",
+            "dropStrategy"
+          ]
+        },
+        "storage": {
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "persistent"
+                  ]
+                },
+                "persistenceProperties": {
+                  "type": "object",
+                  "properties": {
+                    "diskSize": {
+                      "type":"string",
+                      "$ref": "#/definitions/diskSizePattern"
+                    },
+                    "fileCount": {
+                      "type": "integer"
+                    },
+                    "batchSize": {
+                      "type":"string",
+                      "$ref": "#/definitions/batchSizePattern"
+                    }
+                  },
+                  "required": [
+                    "diskSize"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "persistenceProperties"
+              ]
+            },
+            {
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "in-memory"
+                  ]
+                },
+                "inMemoryProperties": {
+                  "type": "object",
+                  "properties": {
+                    "noOfMessages": {
+                      "type": "integer"
+                    },
+                    "dropStrategy": {
+                      "type": "string",
+                      "enum": [
+                        "fifo",
+                        "lifo",
+                        "no-drop"
+                      ]
+                    }
+                  },
+                  "required": [
+                  	"noOfMessages"
+                  ]                  
+                }                
+              },
+              "required": [
+                "type", 
+                "inMemoryProperties"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "inputBuffer",
+        "storage"
+      ]
+    },
+    "destinations": {
+      "description": "",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

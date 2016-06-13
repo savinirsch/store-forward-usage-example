@@ -1,0 +1,50 @@
+descriptor-schema-version: "2.1"
+ 
+info:
+  name: Custom HTTP Store And Forward Service
+  description: Store and Forward Service Implementation for HTTP protocol.
+  version: "1.0"
+  author-link: "http://www.cisco.com"
+  author-name: "Cisco Systems"
+
+service-bundle:
+  provides: [{id: "urn:cisco:custom:service:httpstoreandforward", api-version: 1,version: "1"}]
+ 
+app:
+  type: paas
+  
+  depends-on:
+    services:
+       -
+        min-api-version: 1
+        required: true
+        id: "urn:cisco:system:service:provisioning"
+        label: mw
+       -
+        id: "urn:cisco:system:service:message-broker"
+        min-api-version: 1
+        required: true
+        label: message_broker
+        
+  resources:
+    profile: custom
+    cpu: "20"
+    disk: "50"
+    memory: "128"
+    
+    network:
+     -
+       interface-name: eth0
+       
+  
+  # Specify runtime and startup
+  startup:
+    runtime: java-se-embedded-cp3
+    runtime-version: 1.8 
+    runtime-options:
+      classpath: ".:$CAF_APP_PATH/lib/*:$CAF_APP_PATH/resources/:$CAF_APP_PATH/lib/third-party/*"
+      java-options: -Djava.util.logging.config.file=$CAF_APP_PATH/resources/logging.properties -Djava.net.preferIPv4Stack=true
+      
+    target: com.cisco.iox.middleware.Server
+
+ 

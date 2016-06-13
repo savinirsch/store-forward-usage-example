@@ -1,0 +1,97 @@
+#%RAML 0.8
+
+title: HTTP Store and forward Policy
+iox.service: custom:service:httpstoreandforward
+version: v1
+baseUri: /api/v1/mw
+schemas:
+  - destinations: |
+      {
+         "$schema": "http://json-schema.org/draft-04/schema#",
+         "description": "List of supported destination types",
+         "type": "array",
+         "items": {
+           "type": "string"
+         }
+      }
+     
+/httpstoreandforward/policies:
+  displayName: HTTP Store and forward Policy API Reference
+  get:
+    description: list all policies
+    iox.operation:
+      name: getAllStoreAndForwardPolicy
+  post:
+    description: create policy
+    iox.operation:
+      name: addStoreAndForwardPolicy
+      payloadParameter: value
+    body:
+      application/json:
+        schema: !include schemas/SAFPolicySchema.json
+      text/json:
+    responses:
+      409:
+        description: Store and Forward Policy with given id already exists
+        iox.errorCodes:
+          - saf.policy_already_found
+      400:
+        iox.errorCodes:
+          - saf.source_not_supported
+          - saf.duplicate_destinations_not_supported
+      201:
+        description: Success. Response will include newly created Store and Forward Policy
+        headers:
+          Location:
+            description: URI pointing to the location of the newly created Store and Forward Policy
+            iox.value: "{uri}/{response.json:$.policyId}"
+        body:
+          application/json:
+            schema: !include schemas/SAFPolicySchema.json
+          text/json:
+  /{policyName}:
+    get:
+      description: get policy
+      iox.operation:
+        name: getStoreAndForwardPolicy
+        parameterAliases:
+          policyName: policyName
+      responses:
+       404:
+          iox.errorCodes:
+            - saf.no_such_policy
+       200:
+          body:
+            application/json:
+              schema: !include schemas/SAFPolicySchema.json
+            text/json:
+    put:
+      description: update policy
+      iox.operation:
+        name: updatedStoreAndForwardPolicy
+        payloadParameter: value
+        parameterAliases:
+          policyName: policyName
+      body:
+        application/json:
+        text/json:
+      responses:
+        200:
+          body:
+            application/json:
+            text/json:
+        400:
+          iox.errorCodes:
+            - saf.source_not_supported
+            - saf.duplicate_destinations_not_supported
+    delete:
+      description: delete a policy
+      iox.operation:
+        name: deleteStoreAndForwardPolicy
+        parameterAliases:
+          policyName: policyName
+      responses:
+        404:
+          iox.errorCodes:
+            - saf.no_such_policy
+        204:

@@ -1,0 +1,13 @@
+{
+"name":"custom:service:httpstoreandforward",
+"useApplicationClassLoader": true,
+"className": "com.cisco.iox.middleware.storeandforward.http.HTTPStoreAndForwardService",
+
+"configuration": {
+	"diskSize" : "41943040",
+	"batchSize" : "524288",
+	"fileCount" : "4",
+	"noOfMessages" : "1024000",
+	"keepAliveSeconds" : "15"
+	}
+}
